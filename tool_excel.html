@@ -557,19 +557,20 @@
         }
         
         // 模拟上传进度
-        function simulateProgress() {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                }
-                
-                progressBar.style.width = `${progress}%`;
-                progressPercentage.textContent = `${Math.round(progress)}%`;
-            }, 200);
-        }
+                    function simulateProgress() {
+                        uploadProgress.classList.remove('hidden');
+                        let progress = 0;
+                        const interval = setInterval(() => {
+                            progress += Math.random() * 15;
+                            if (progress > 100) {
+                                progress = 100;
+                                clearInterval(interval);
+                            }
+                            
+                            progressBar.style.width = `${progress}%`;
+                            progressPercentage.textContent = `${Math.round(progress)}%`;
+                        }, 200);
+                    }
         
         // 格式化文件大小
         function formatFileSize(bytes) {
@@ -912,7 +913,7 @@
         }
         
         // 导出图表
-        exportChart.addEventListener('click', () => {ener('click', () => {
+        exportChart.addEventListener('click', () => {
             if (!chart) {
                 showNotification('错误', '请先生成图表', 'error');
                 return;
@@ -998,3 +999,57 @@
         }
         
         // 默认选中第一个导出选项
+        exportOptions[0].classList.add('bg-primary/10');
+        
+        // 切换导出选项
+        exportOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                exportOptions.forEach(opt => opt.classList.remove('bg-primary/10'));
+                option.classList.add('bg-primary/10');
+            });
+        });
+        
+        // 切换主题
+        themeOptions.forEach(theme => {
+            theme.addEventListener('click', () => {
+                themeOptions.forEach(opt => opt.classList.remove('bg-primary/10'));
+                theme.classList.add('bg-primary/10');
+                selectedTheme = theme.dataset.theme;
+                updateChartColors();
+            });
+        });
+        
+        // 切换图表颜色
+        function updateChartColors() {
+            if (chart) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.backgroundColor = generateColors(chart.data.labels.length);
+                });
+                chart.update();
+            }
+        }
+        
+        // 切换图表类型
+        chartTypeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                chartTypeOptions.forEach(opt => opt.classList.remove('bg-primary/10'));
+                option.classList.add('bg-primary/10');
+                selectedChartType = option.dataset.type;
+                updateChartType();
+            });
+        });
+        
+        // 切换图表类型
+        function updateChartType() {
+            if (chart) {    
+                chart.config.type = selectedChartType;
+                chart.update();
+            }
+            updateChartColors();
+        }
+
+    </script>
+
+<!-- 由于仅给出 </body> 且提示 '}' 预期，推测可能前面代码块有未闭合的情况，但当前选择区域无更多信息，此处仅保留原代码 -->
+</body>
+</html>
