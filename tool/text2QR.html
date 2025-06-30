@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本转二维码</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            dark: '#1E293B',
+            light: '#F8FAFC'
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+      }
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-qrcode text-primary text-2xl"></i>
+        <h1 class="text-xl font-semibold text-dark">QR码生成器</h1>
+      </div>
+      <nav>
+        <ul class="flex space-x-6">
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-all-300"><i class="fa fa-home mr-1"></i>首页</a></li>
+          <li><a href="#" class="text-gray-600 hover:text-primary transition-all-300"><i class="fa fa-info-circle mr-1"></i>关于</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-grow container mx-auto px-4 py-8 md:py-12">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-primary text-white p-6 md:p-8">
+        <h2 class="text-2xl md:text-3xl font-bold mb-2">将文本转换为QR码</h2>
+        <p class="text-blue-100 opacity-90">输入任何文本，生成对应的二维码，可用于分享链接、联系方式等</p>
+      </div>
+      
+      <div class="p-6 md:p-8">
+        <!-- 输入区域 -->
+        <div class="mb-8">
+          <label for="textInput" class="block text-sm font-medium text-gray-700 mb-2">输入文本</label>
+          <textarea 
+            id="textInput" 
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all-300 resize-none" 
+            rows="4"
+            placeholder="请输入要转换的文本..."
+          >https://www.example.com</textarea>
+          <div class="flex justify-between items-center mt-2">
+            <div class="text-xs text-gray-500">
+              <span id="charCount">21</span> 字符
+            </div>
+            <button id="clearBtn" class="text-gray-500 hover:text-red-500 text-sm transition-all-300">
+              <i class="fa fa-eraser mr-1"></i>清空
+            </button>
+          </div>
+        </div>
+        
+        <!-- 选项区域 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div>
+            <label for="sizeSelect" class="block text-sm font-medium text-gray-700 mb-2">尺寸</label>
+            <select 
+              id="sizeSelect" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all-300"
+            >
+              <option value="200">200x200</option>
+              <option value="300" selected>300x300</option>
+              <option value="400">400x400</option>
+              <option value="500">500x500</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="errorLevel" class="block text-sm font-medium text-gray-700 mb-2">纠错级别</label>
+            <select 
+              id="errorLevel" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all-300"
+            >
+              <option value="L">低 (7%)</option>
+              <option value="M" selected>中 (15%)</option>
+              <option value="Q">较高 (25%)</option>
+              <option value="H">高 (30%)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="colorPicker" class="block text-sm font-medium text-gray-700 mb-2">颜色</label>
+            <div class="flex space-x-2">
+              <div class="relative">
+                <input 
+                  type="color" 
+                  id="colorPicker" 
+                  class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                  value="#000000"
+                >
+              </div>
+              <div class="relative flex-grow">
+                <input 
+                  type="text" 
+                  id="colorInput" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all-300"
+                  value="#000000"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 按钮区域 -->
+        <div class="flex flex-col sm:flex-row justify-between gap-4 mb-8">
+          <button 
+            id="generateBtn" 
+            class="flex-grow bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center"
+          >
+            <i class="fa fa-qrcode mr-2"></i>生成二维码
+          </button>
+          <button 
+            id="downloadBtn" 
+            class="flex-grow bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg transition-all-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center opacity-50 cursor-not-allowed"
+            disabled
+          >
+            <i class="fa fa-download mr-2"></i>下载二维码
+          </button>
+        </div>
+        
+        <!-- 二维码显示区域 -->
+        <div id="qrcodeContainer" class="flex justify-center items-center p-6 border-2 border-dashed border-gray-200 rounded-xl min-h-[300px] bg-gray-50">
+          <div id="qrcodePlaceholder" class="text-center">
+            <i class="fa fa-qrcode text-gray-300 text-6xl mb-4"></i>
+            <p class="text-gray-400">生成的二维码将显示在这里</p>
+          </div>
+          <canvas id="qrcodeCanvas" class="hidden"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 功能说明卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+      <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all-300 transform hover:-translate-y-1">
+        <div class="text-primary text-2xl mb-4">
+          <i class="fa fa-link"></i>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">网址链接</h3>
+        <p class="text-gray-600">将网站URL转换为二维码，扫描后直接访问网页，方便分享和传播。</p>
+      </div>
+      
+      <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all-300 transform hover:-translate-y-1">
+        <div class="text-primary text-2xl mb-4">
+          <i class="fa fa-phone"></i>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">联系信息</h3>
+        <p class="text-gray-600">生成包含联系人信息的二维码，扫描后可直接添加到通讯录，便捷高效。</p>
+      </div>
+      
+      <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all-300 transform hover:-translate-y-1">
+        <div class="text-primary text-2xl mb-4">
+          <i class="fa fa-shield"></i>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">高安全性</h3>
+        <p class="text-gray-600">采用先进的加密算法，确保二维码内容不被篡改，保障信息安全。</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-8 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center space-x-2">
+            <i class="fa fa-qrcode text-primary text-xl"></i>
+            <span class="font-semibold text-lg">QR码生成器</span>
+          </div>
+          <p class="text-gray-400 text-sm mt-2">快速、简单地将文本转换为二维码</p>
+        </div>
+        
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+            <i class="fa fa-github text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+            <i class="fa fa-twitter text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+            <i class="fa fa-linkedin text-xl"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-6 pt-6 text-center text-gray-400 text-sm">
+        <p>&copy; 2025 QR码生成器. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取DOM元素
+      const textInput = document.getElementById('textInput');
+      const charCount = document.getElementById('charCount');
+      const clearBtn = document.getElementById('clearBtn');
+      const sizeSelect = document.getElementById('sizeSelect');
+      const errorLevel = document.getElementById('errorLevel');
+      const colorPicker = document.getElementById('colorPicker');
+      const colorInput = document.getElementById('colorInput');
+      const generateBtn = document.getElementById('generateBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const qrcodeContainer = document.getElementById('qrcodeContainer');
+      const qrcodePlaceholder = document.getElementById('qrcodePlaceholder');
+      const qrcodeCanvas = document.getElementById('qrcodeCanvas');
+      
+      // 更新字符计数
+      textInput.addEventListener('input', function() {
+        charCount.textContent = textInput.value.length;
+      });
+      
+      // 清空输入
+      clearBtn.addEventListener('click', function() {
+        textInput.value = '';
+        charCount.textContent = '0';
+        textInput.focus();
+      });
+      
+      // 颜色选择器和输入框同步
+      colorPicker.addEventListener('input', function() {
+        colorInput.value = colorPicker.value;
+      });
+      
+      colorInput.addEventListener('input', function() {
+        // 简单验证颜色格式
+        if (/^#[0-9A-F]{6}$/i.test(colorInput.value)) {
+          colorPicker.value = colorInput.value;
+        }
+      });
+      
+      // 生成二维码
+      generateBtn.addEventListener('click', function() {
+        const text = textInput.value.trim();
+        
+        if (!text) {
+          alert('请输入要转换的文本');
+          return;
+        }
+        
+        const size = parseInt(sizeSelect.value);
+        const level = errorLevel.value;
+        const color = colorPicker.value;
+        
+        // 隐藏占位符，显示canvas
+        qrcodePlaceholder.classList.add('hidden');
+        qrcodeCanvas.classList.remove('hidden');
+        
+        // 生成二维码
+        new QRCode(qrcodeCanvas, {
+          text: text,
+          width: size,
+          height: size,
+          colorDark: color,
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel[level]
+        });
+        
+        // 启用下载按钮
+        downloadBtn.disabled = false;
+        downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      });
+      
+      // 下载二维码
+      downloadBtn.addEventListener('click', function() {
+        if (!qrcodeCanvas.toDataURL) {
+          alert('您的浏览器不支持下载功能');
+          return;
+        }
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
+        link.href = qrcodeCanvas.toDataURL('image/png');
+        link.click();
+      });
+      
+      // 初始生成一个示例二维码
+      generateBtn.click();
+    });
+  </script>
+</body>
+</html>
+    
