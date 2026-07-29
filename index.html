@@ -1,58 +1,491 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <title>我的第一个 HTML 页面</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="canvas:width" content="1440">
+  <meta name="canvas:height" content="900">
+  <title>ZHY Navigation</title>
+  <style>
+    /* === Seed Tokens === */
+    :root {
+      --seed-bg: #f8fafc;
+      --seed-fg: #0f172a;
+      --seed-primary: #0369a1;
+      --seed-accent: #059669;
+      --seed-surface: #ffffff;
+      --seed-radius: 10px;
+
+      /* Derived tokens */
+      --color-heading: var(--seed-fg);
+      --color-body: color-mix(in srgb, var(--seed-fg) 60%, transparent);
+      --color-muted: color-mix(in srgb, var(--seed-fg) 40%, transparent);
+      --color-border: color-mix(in srgb, var(--seed-fg) 8%, var(--seed-surface));
+      --color-primary-soft: color-mix(in srgb, var(--seed-primary) 8%, var(--seed-surface));
+      --color-primary-hover: color-mix(in srgb, var(--seed-primary) 85%, #000);
+      --color-accent-soft: color-mix(in srgb, var(--seed-accent) 10%, var(--seed-surface));
+      --shadow-card: 0 1px 3px color-mix(in srgb, var(--seed-primary) 6%, transparent),
+                     0 8px 24px color-mix(in srgb, var(--seed-primary) 5%, transparent);
+      --shadow-card-hover: 0 4px 12px color-mix(in srgb, var(--seed-primary) 10%, transparent),
+                           0 16px 40px color-mix(in srgb, var(--seed-primary) 8%, transparent);
+      --radius: var(--seed-radius);
+      --radius-sm: calc(var(--seed-radius) * 0.6);
+      --radius-lg: calc(var(--seed-radius) * 1.6);
+      --spacing-unit: 8px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+    }
+
+    /* === Reset & Base === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--seed-bg);
+      color: var(--color-body);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === Layout === */
+    .page-wrapper {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* === Header === */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .site-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--color-heading);
+      letter-spacing: -0.03em;
+    }
+
+    .site-title span {
+      color: var(--seed-primary);
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--color-body);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      background: var(--seed-surface);
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--seed-primary);
+      border-color: color-mix(in srgb, var(--seed-primary) 30%, transparent);
+      background: var(--color-primary-soft);
+    }
+
+    .nav-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* === Search === */
+    .search-container {
+      position: relative;
+      margin-bottom: 36px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--color-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 16px 14px 46px;
+      font-size: 0.9375rem;
+      font-family: var(--font-sans);
+      color: var(--color-heading);
+      background: var(--seed-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input::placeholder {
+      color: var(--color-muted);
+    }
+
+    .search-input:focus {
+      border-color: var(--seed-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--seed-primary) 12%, transparent),
+                  var(--shadow-card);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: color-mix(in srgb, var(--seed-fg) 6%, transparent);
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--color-muted);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .search-clear.visible { display: flex; }
+
+    .no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-muted);
+      font-size: 0.9375rem;
+    }
+
+    .no-results.visible { display: block; }
+
+    /* === Category Grid === */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* === Category Card === */
+    .category-card {
+      background: var(--seed-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+
+    .category-card:hover {
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .category-card.hidden { display: none; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      background: var(--color-primary-soft);
+      color: var(--seed-primary);
+      flex-shrink: 0;
+    }
+
+    .card-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .card-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--color-heading);
+      letter-spacing: -0.01em;
+    }
+
+    /* === Link List === */
+    .link-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .link-item a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      font-size: 0.8125rem;
+      color: var(--color-body);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+
+    .link-item a:hover {
+      background: var(--color-primary-soft);
+      color: var(--seed-primary);
+    }
+
+    .link-item a::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--seed-primary) 35%, transparent);
+      flex-shrink: 0;
+      transition: background 0.15s ease;
+    }
+
+    .link-item a:hover::before {
+      background: var(--seed-primary);
+    }
+
+    .link-item.hidden { display: none; }
+
+    /* === Footer === */
+    .site-footer {
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+    }
+
+    /* === Responsive === */
+    @media (max-width: 720px) {
+      .page-wrapper { padding: 28px 16px 60px; }
+      .site-header { flex-direction: column; align-items: flex-start; }
+      .category-grid { grid-template-columns: 1fr; }
+      .site-title { font-size: 1.375rem; }
+    }
+  </style>
 </head>
+<body>
+  <div class="page-wrapper" data-component="page">
+    <!-- Header -->
+    <header class="site-header" data-component="header">
+      <h1 class="site-title">ZHY<span>.</span>Nav</h1>
+      <nav class="header-nav">
+        <a class="nav-link" href="androidPage.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Android 源码
+        </a>
+        <a class="nav-link" href="https://github.com/seaFeng/zhy.guthub.io" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </header>
 
-  <body>
-    <a href="https://github.com/seaFeng/zhy.guthub.io/blob/main/index.html" target="_blank">跳转编辑页面</a>
-    
-    <a href="https://weread.qq.com/"  target="_blank">微信读书</a>
-    <a href="https://www.yuque.com/dashboard/books"  target="_blank">语雀笔记</a>
-    <a href="https://ide.cloud.tencent.com/dashboard/workspace" target="_blank">腾讯云编译器</a>
-    <a href="https://shell.huaweicloud.com/remote/l5t5e9nqh7hlh6k" target="_blank">华为云服务器</a>
-    <a href="https://developer.huaweicloud.com/space/devportal/desktop" target="_blank">华为免费云主机</a>
-    <a href="https://pan.baidu.com/disk/main#/index?category=all&path=%2F%E6%9D%A5%E8%87%AA%EF%BC%9AAI%E7%AC%94%E8%AE%B0" target="_blank">百度云盘笔记</a>
-    <a href="https://seafeng.github.io/zhy.guthub.io/androidPage.html" target="_blank">Android 源码书签页</a>
-    
-    <h2> 工具 </h2>
-    <a href="https://seafeng.github.io/zhy.guthub.io/tool_excel.html" target="_blank">excel 生成图表</a>
-    <a href="https://seafeng.github.io/zhy.guthub.io/tool/text2QR.html" target="_blank">生成二维码</a>
-    
-    <h2> 学习资源github </h2>
-    <a href="https://github.com/kamranahmedse/developer-roadmap" target="_blank">[ 学习路线图 ]</a>
-    <a href="https://github.com/codecrafters-io/build-your-own-x" target="_blank">[ build-your-own-x ]</a>
+    <!-- Search -->
+    <div class="search-container" data-component="search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="搜索链接..." autocomplete="off">
+      <button class="search-clear" id="searchClear" aria-label="清除搜索">&times;</button>
+    </div>
 
-    <h2> 小游戏 </h2>
-    <a href="https://seafeng.github.io/zhy.guthub.io/shuduGame.html" target="_blank">数独游戏</a>
-    
-    <h2> Android 相关资料 </h2>
-    <a href="https://developer.android.com/guide?hl=zh-cn" target="_blank">android 官方开发指南</a>
-    <a href="http://androidxref.com/2.3.7/" target="_blank">Android 源码地址_androidxref</a>
-    <a href="https://thundersoft.feishu.cn/wiki/wikcnZ5Sx4E6ZJdxDywDCuOB07e" target="_blank">中科学习资源</a>
+    <p class="no-results" id="noResults">没有找到匹配的链接</p>
 
-    <h2> 工具 </h2>
-    <a href="https://app.diagrams.net/#HseaFeng%2FUML%2Fmaster%2FPackageParse2%23parsePackage.drawio#%7B%22pageId%22%3A%22z9KA9r9BIGGibdMiXThD%22%7D" target="_blank">画图_diagrams</a>
-    <a href="https://mvnrepository.com/" target="_blank">maven 公共服务器</a>
-    <a href="https://tool.chinaz.com/tools/unicode.aspx" target="_blank">工具网站1</a>
-    <a href="https://www.jyshare.com/" target="_blank">站长工具</a>
-    <a href="https://www.bejson.com/" target="_blank">Json工具</a>
-    <a href="https://word.wd1x.com/" target="_blank">word 插入漂亮代码</a>
-    
-    
+    <!-- Category Grid -->
+    <main class="category-grid" data-component="categories">
 
-    <h2> 学习内容 </h2>
-    <a href="https://github.com/SELinuxProject" target="_blank"> seLinux 文档 </a>
+      <!-- 常用工具 -->
+      <section class="category-card" data-component="card-tools" data-category="常用工具">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <h2 class="card-title">常用工具</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://weread.qq.com/" target="_blank" rel="noopener">微信读书</a></li>
+          <li class="link-item"><a href="https://www.yuque.com/dashboard/books" target="_blank" rel="noopener">语雀笔记</a></li>
+          <li class="link-item"><a href="https://ide.cloud.tencent.com/dashboard/workspace" target="_blank" rel="noopener">腾讯云编译器</a></li>
+          <li class="link-item"><a href="https://shell.huaweicloud.com/remote/l5t5e9nqh7hlh6k" target="_blank" rel="noopener">华为云服务器</a></li>
+          <li class="link-item"><a href="https://developer.huaweicloud.com/space/devportal/desktop" target="_blank" rel="noopener">华为免费云主机</a></li>
+          <li class="link-item"><a href="https://pan.baidu.com/disk/main#/index?category=all&path=%2F%E6%9D%A5%E8%87%AA%EF%BC%9AAI%E7%AC%94%E8%AE%B0" target="_blank" rel="noopener">百度云盘笔记</a></li>
+        </ul>
+      </section>
 
-    <h2> AI 工具 </h2>
-    <a href="https://chat.deepseek.com/" target="_blank"> deepseek </a>
-    <a href="https://chatgpt.com/" target="_blank"> chatgpt </a>
+      <!-- 开发工具 -->
+      <section class="category-card" data-component="card-devtools" data-category="开发工具">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h2 class="card-title">开发工具</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://seafeng.github.io/zhy.guthub.io/tool_excel.html" target="_blank" rel="noopener">Excel 生成图表</a></li>
+          <li class="link-item"><a href="https://seafeng.github.io/zhy.guthub.io/tool/text2QR.html" target="_blank" rel="noopener">生成二维码</a></li>
+          <li class="link-item"><a href="https://app.diagrams.net/" target="_blank" rel="noopener">Diagrams 画图</a></li>
+          <li class="link-item"><a href="https://mvnrepository.com/" target="_blank" rel="noopener">Maven 仓库</a></li>
+          <li class="link-item"><a href="https://www.bejson.com/" target="_blank" rel="noopener">JSON 工具</a></li>
+          <li class="link-item"><a href="https://word.wd1x.com/" target="_blank" rel="noopener">Word 插入代码</a></li>
+          <li class="link-item"><a href="https://tool.chinaz.com/tools/unicode.aspx" target="_blank" rel="noopener">Unicode 转换</a></li>
+          <li class="link-item"><a href="https://www.jyshare.com/" target="_blank" rel="noopener">站长工具</a></li>
+        </ul>
+      </section>
 
-    <h2> 资源 </h2>
-    <a href="https://fmhy.net/" target="_blank"> fmhy </a>
-    <a href="https://kf369.cn/#term-701" target="_blank"> 资源导航网站1 </a>
-    
-  </body>
+      <!-- AI 工具 -->
+      <section class="category-card" data-component="card-ai" data-category="AI 工具">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/><circle cx="12" cy="6" r="1"/></svg>
+          </div>
+          <h2 class="card-title">AI 工具</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://chat.deepseek.com/" target="_blank" rel="noopener">DeepSeek</a></li>
+          <li class="link-item"><a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a></li>
+        </ul>
+      </section>
 
+      <!-- 学习资源 -->
+      <section class="category-card" data-component="card-learning" data-category="学习资源">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <h2 class="card-title">学习资源</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://github.com/kamranahmedse/developer-roadmap" target="_blank" rel="noopener">Developer Roadmap</a></li>
+          <li class="link-item"><a href="https://github.com/codecrafters-io/build-your-own-x" target="_blank" rel="noopener">Build Your Own X</a></li>
+          <li class="link-item"><a href="https://github.com/SELinuxProject" target="_blank" rel="noopener">SELinux 文档</a></li>
+        </ul>
+      </section>
+
+      <!-- Android 相关 -->
+      <section class="category-card" data-component="card-android" data-category="Android 相关">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+          </div>
+          <h2 class="card-title">Android 相关</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://developer.android.com/guide?hl=zh-cn" target="_blank" rel="noopener">Android 官方开发指南</a></li>
+          <li class="link-item"><a href="http://androidxref.com/2.3.7/" target="_blank" rel="noopener">Android 源码 (androidxref)</a></li>
+          <li class="link-item"><a href="https://thundersoft.feishu.cn/wiki/wikcnZ5Sx4E6ZJdxDywDCuOB07e" target="_blank" rel="noopener">中科学习资源</a></li>
+          <li class="link-item"><a href="androidPage.html">Android 源码书签页</a></li>
+        </ul>
+      </section>
+
+      <!-- 休闲娱乐 -->
+      <section class="category-card" data-component="card-fun" data-category="休闲娱乐">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          </div>
+          <h2 class="card-title">休闲娱乐</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://seafeng.github.io/zhy.guthub.io/shuduGame.html" target="_blank" rel="noopener">数独游戏</a></li>
+        </ul>
+      </section>
+
+      <!-- 资源导航 -->
+      <section class="category-card" data-component="card-resources" data-category="资源导航">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <h2 class="card-title">资源导航</h2>
+        </div>
+        <ul class="link-list">
+          <li class="link-item"><a href="https://fmhy.net/" target="_blank" rel="noopener">FMHY</a></li>
+          <li class="link-item"><a href="https://kf369.cn/#term-701" target="_blank" rel="noopener">资源导航网站</a></li>
+        </ul>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" data-component="footer">
+      ZHY Navigation &middot; Built for daily development workflow
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      const input = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('searchClear');
+      const noResults = document.getElementById('noResults');
+      const cards = document.querySelectorAll('.category-card');
+
+      function filterLinks() {
+        const query = input.value.trim().toLowerCase();
+        clearBtn.classList.toggle('visible', query.length > 0);
+
+        let totalVisible = 0;
+
+        cards.forEach(function(card) {
+          const items = card.querySelectorAll('.link-item');
+          let cardVisible = 0;
+
+          items.forEach(function(item) {
+            const text = item.textContent.toLowerCase();
+            const match = !query || text.includes(query);
+            item.classList.toggle('hidden', !match);
+            if (match) cardVisible++;
+          });
+
+          // Also match category title
+          const title = card.querySelector('.card-title').textContent.toLowerCase();
+          if (query && title.includes(query)) {
+            items.forEach(function(item) { item.classList.remove('hidden'); });
+            cardVisible = items.length;
+          }
+
+          card.classList.toggle('hidden', cardVisible === 0);
+          totalVisible += cardVisible;
+        });
+
+        noResults.classList.toggle('visible', totalVisible === 0 && query.length > 0);
+      }
+
+      input.addEventListener('input', filterLinks);
+      clearBtn.addEventListener('click', function() {
+        input.value = '';
+        filterLinks();
+        input.focus();
+      });
+    })();
+  </script>
+</body>
 </html>
-
